@@ -27,6 +27,9 @@
 *.out
 *.app
 
+# Distribution Files
+dist/**
+
 # Emacs stuff
 *~
 \#*\#

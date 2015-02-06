@@ -1,10 +1,27 @@
-CXX = g++
+dist = $(ROOT_DIR)/dist/$(1)
 
-CXXFLAGS = -Wall -Wno-uninitialized
+bin = $(ROOT_DIR)/dist/bin/$(1)
 
-BINARIES = fb
+src = $(ROOT_DIR)/src/$(1)
 
-all: ${BINARIES}
+root = $(ROOT_DIR)/$(1)
+
+ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
+
+CXX := g++
+
+CXXFLAGS := -Wall -Wno-uninitialized
+
+BINARIES := fb
+
+FULL_PATH_BINARIES := $(call bin,$(BINARIES))
+
+all: $(BINARIES)
+
+fb_depends := fb.o utils.o
+fb: $(foreach file,$(fb_depends),$(call src,$(file)))
+	$(CXX) $(CXXFLAGS) $^ -o $(call bin,$@)
 
 clean:
-	rm -f ${BINARIES} *.o \#*\#
+	rm -f $(call src,*.o)
+	rm -rf \#*\#

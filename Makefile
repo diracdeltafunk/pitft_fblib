@@ -16,11 +16,16 @@ BINARIES := fb
 
 FULL_PATH_BINARIES := $(call bin,$(BINARIES))
 
-all: $(BINARIES)
+.PHONY: setup clean
 
-fb_depends := fb.o utils.o
+all: setup $(BINARIES)
+
+fb_depends := utils.o FBPainter.o fb.o
 fb: $(foreach file,$(fb_depends),$(call src,$(file)))
 	$(CXX) $(CXXFLAGS) $^ -o $(call bin,$@)
+
+setup:
+	mkdir -p $(call bin,)
 
 clean:
 	rm -f $(call src,*.o)

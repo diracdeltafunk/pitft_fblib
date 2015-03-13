@@ -3,6 +3,9 @@
 #include <iostream>
 #include <sys/ioctl.h>
 #include <linux/fb.h>
+#include <algorithm>
+#include <string>
+
 #include "utils.h"
 
 using namespace std;

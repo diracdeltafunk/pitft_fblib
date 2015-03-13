@@ -10,23 +10,20 @@
 #include <cstdlib> //exit
 
 #include "utils.h" //(get|set)(V|F)Info
+#include "point.h" //point (struct)
+#include "FBPainter.h" //FBPainter (class)
 
 using namespace std;
 
 int main(int argc, char** argv)
 {
-
-  if (argc != 2) {
-    cerr << "Usage : " << argv[0] << " framebuffer" << endl;
-    return 1;
-  }
-
+  string fb_path = (argc==1)?string(getenv("FRAMEBUFFER")):string(argv[1]);
   struct fb_var_screeninfo v_info;
   struct fb_fix_screeninfo f_info;
 
   // Open the framebuffer device file for reading and writing
-  cout << "Using framebuffer " << argv[1] << endl;
-  int fbfd = open(argv[1], O_RDWR);
+  cout << "Using framebuffer " << fb_path << endl;
+  int fbfd = open(fb_path.c_str(), O_RDWR);
   if (!fbfd) {
     cerr << "Error #" << errno << ": cannot open framebuffer device." << endl;
     return 1;
@@ -36,20 +33,22 @@ int main(int argc, char** argv)
   getFInfo(fbfd, &f_info);
 
   // Output framebuffer info
-  uint32_t bpp = v_info.bits_per_pixel;
+  int bpp = (int) v_info.bits_per_pixel;
+  int xres = (int) v_info.xres;
+  int yres = (int) v_info.yres;
   cout << "Framebuffer info:" << endl;
-  cout << "  Resolution:  " << v_info.xres << "x" << v_info.yres << endl;
+  cout << "  Resolution:  " << xres << "x" << yres << endl;
   cout << "  Color Depth: " << bpp << "bpp" << endl;
 
-  if ((int) bpp != 16) {
+  if (bpp != 16) {
     cout << "Setting color depth to 16bpp" << endl;
     // Set bpp
     v_info.bits_per_pixel = 16;
     setVInfo(fbfd, &v_info);
     // Check bpp
     getVInfo(fbfd, &v_info);
-    bpp = v_info.bits_per_pixel;
-    if ((int) bpp != 16) {
+    bpp = (int) v_info.bits_per_pixel;
+    if (bpp != 16) {
       cerr << "Error: Color depth not 16bpp. Can't draw.";
       return 1;
     }
@@ -64,11 +63,13 @@ int main(int argc, char** argv)
   }
 
   // Make it pretty!
-  for (uint32_t offset = 0; offset < screensize; offset += 2) {
-    *(fb_map + offset) = 0xffff;
-  }
 
-  cout << sizeof(*fb_map) << endl;
+  FBPainter fb(fb_map, xres, yres);
+
+  // Draw palette
+  //fb.showPalette();
+
+  fb.fill(rgb(0, 0, 0));
 
   // Cleanup
   munmap(fb_map, screensize);
